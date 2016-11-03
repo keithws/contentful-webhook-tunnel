@@ -1,32 +1,32 @@
 {
-  "name": "contentful-webhook-ngrok",
+  "name": "contentful-webhook-tunnel",
   "version": "1.0.0",
-  "description": "An HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost by ngrok.",
+  "description": "An HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost.",
   "main": "index.js",
   "scripts": {
     "test": "eslint \"**/*.js\""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/keithws/contentful-webhook-ngrok.git"
+    "url": "git+https://github.com/keithws/contentful-webhook-tunnel.git"
   },
   "keywords": [
     "contentful",
     "webhook",
-    "ngrok",
-    "contentful-webhook",
-    "webhook-ngrok",
-    "webhooks",
     "tunnel",
+    "contentful-webhook",
+    "webhook-tunnel",
+    "webhooks",
+    "ngrok",
     "tunnels",
     "localhost"
   ],
   "author": "Keith W. Shaw <keith.w.shaw@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/keithws/contentful-webhook-ngrok/issues"
+    "url": "https://github.com/keithws/contentful-webhook-tunnel/issues"
   },
-  "homepage": "https://github.com/keithws/contentful-webhook-ngrok#readme",
+  "homepage": "https://github.com/keithws/contentful-webhook-tunnel#readme",
   "devDependencies": {
     "eslint": "^3.9.1"
   }
