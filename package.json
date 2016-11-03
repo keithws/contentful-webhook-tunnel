@@ -4,7 +4,7 @@
   "description": "An HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost by ngrok.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "eslint \"**/*.js\""
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/keithws/contentful-webhook-ngrok/issues"
   },
-  "homepage": "https://github.com/keithws/contentful-webhook-ngrok#readme"
+  "homepage": "https://github.com/keithws/contentful-webhook-ngrok#readme",
+  "devDependencies": {
+    "eslint": "^3.9.1"
+  }
 }
