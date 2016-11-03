@@ -29,5 +29,10 @@
   "homepage": "https://github.com/keithws/contentful-webhook-tunnel#readme",
   "devDependencies": {
     "eslint": "^3.9.1"
+  },
+  "dependencies": {
+    "contentful-management": "^1.2.1",
+    "contentful-webhook-listener": "^1.0.1",
+    "ngrok": "^2.2.3"
   }
 }
