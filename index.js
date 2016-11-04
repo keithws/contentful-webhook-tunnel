@@ -5,16 +5,36 @@ const ContentfulWebhookListener = listener.Server;
 const ngrok = require("ngrok");
 const contentfulManagement = require("contentful-management");
 const os = require("os");
+const crypto = require("crypto");
+
+/**
+ * generate a random string for HTTP Basic Authentication
+ * @returns {String} auth string of 32 random characters
+ */
+function randomAuth() {
+
+    // note, each byte encoded to hex is two characters
+    let username = crypto.randomBytes(8).toString("hex");
+    let password = crypto.randomBytes(8).toString("hex");
+
+    // insert an ":" in the middle to make this auth
+    return `${username}:${password}`;
+
+}
+
+let options = {};
 
 class ContentfulWebhookTunnel extends ContentfulWebhookListener {
     constructor (opts, requestListener) {
 
+        opts.auth = opts.auth || randomAuth();
+        opts.port = opts.port || 5678;
+        opts.spaces = opts.spaces || [];
+        options = opts;
+
         super(opts, requestListener);
 
         let server = this;
-        let auth = opts.auth;
-        let spaces = opts.spaces;
-        let port = opts.port;
 
         function handleError (err) {
 
@@ -23,7 +43,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
         }
 
-        this.on("listening", function () {
+        server.on("listening", function () {
 
             if (!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
 
@@ -41,14 +61,14 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                     "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
                 });
 
-                spaces.forEach(function (spaceId) {
+                options.spaces.forEach(function (spaceId) {
 
                     // use contentful API to create/update webhook
                     client.getSpace(spaceId).then((space) => {
 
                         let data, hostname, password, username;
 
-                        [username, password] = auth.split(":");
+                        [username, password] = options.auth.split(":");
                         hostname = os.hostname();
                         data = {
                             "name": `Tunnel to ${hostname}`,
@@ -106,14 +126,21 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
             ngrok.connect({
                 "proto": "http", // http|tcp|tls
-                "addr": port, // port or network address
-                "auth": auth, // http basic authentication for tunnel
+                "addr": options.port, // port or network address
+                "auth": options.auth, // http basic authentication for tunnel
                 "subdomain": process.env.NGROK_SUBDOMAIN, // reserved tunnel name https://alex.ngrok.io
                 "authtoken": process.env.NGROK_AUTH_TOKEN, // your authtoken from ngrok.com
                 "region": process.env.NGROK_REGION || "us" // one of ngrok regions (us, eu, au, ap), defaults to us
             });
 
         });
+    }
+    listen(port, hostname, backlog, callback) {
+
+        port = port || options.port;
+
+        super.listen(port, hostname, backlog, callback);
+
     }
 }
 
