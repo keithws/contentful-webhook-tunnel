@@ -6,16 +6,6 @@ const ngrok = require("ngrok");
 const contentfulManagement = require("contentful-management");
 const os = require("os");
 
-if (!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
-
-    throw new Error("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN could not be found.");
-
-}
-
-let client = contentfulManagement.createClient({
-    "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
-});
-
 class ContentfulWebhookTunnel extends ContentfulWebhookListener {
     constructor (opts, requestListener) {
 
@@ -35,10 +25,21 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
         this.on("listening", function () {
 
+            if (!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
+
+                handleError(new Error("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN is undefined or invalid."));
+                return;
+
+            }
+
             // start up ngrok
             ngrok.once("connect", function (url) {
 
                 server.emit("ngrokConnect", url);
+
+                let client = contentfulManagement.createClient({
+                    "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+                });
 
                 spaces.forEach(function (spaceId) {
 
