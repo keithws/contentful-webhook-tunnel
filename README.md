@@ -4,7 +4,7 @@
 
 A simple HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost by ngrok.
 
-Extends [contentful-webhook-listener.js][2] to automatically start up ngrok with a tunnel to the same port and registers a webhook with the Contentful.
+This module extends [contentful-webhook-listener.js][2] to automatically start up ngrok with a tunnel to the same port and registers a webhook for the ngrok URL with Contentful.
 
 This is very useful for local development and/or servers behind firewalls. Create a script with custom callbacks for any or all actions that occur in Contentful.
 
@@ -40,15 +40,15 @@ server.on("publish", function (payload) {
 server.listen(port);
 ```
 
-To register the webhooks via the Contentful Content Managment API requires a an access token. Vist the [Contentful Developer Center][3] to acquire an access token for a local script. Then, save the token to an environment variable named `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`.
+To register the webhooks via the Contentful Content Managment API requires an access token. Vist the [Contentful Developer Center][3] to acquire an access token for a local script. Then, save that token to an environment variable named `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`.
 
-Ngrok defaults to using tunnel servers in US. To use a tunnel server outside the US then set the `NGORK_REGION` environment variable to another region. See the [ngrok documentation][4] for the list of supported regions.
+Ngrok defaults to using tunnel servers in the US. To use a tunnel server outside the US then set the `NGORK_REGION` environment variable to another region. See the [ngrok documentation][4] for the list of supported regions.
 
 ## How it Works
 
-Node.js is used to create a HTTP server that listens for requests and processes them as requests from Contentful Webhooks. When this server starts listening, then ngrok is started up and connected to the same port the server is running on and with the same authentication, if any. Once ngork is connected and provides an ngrok URL, then the ngrok URL is registered with Contentful via the Contentful Management API. If this process is interupted or terminated, then the registered webhook will be removed from Contentful.
+Node.js is used to create a HTTP server that listens for requests and processes them as requests from Contentful Webhooks. When this server starts listening, then ngrok is started up and connected to the same port as the server and requires the same authentication, if any. Once ngork is connected and provides an ngrok URL, then the ngrok URL is registered with Contentful via the Contentful Content Management API. If the server is interrupted or terminated, then the registered webhook will be removed from Contentful.
 
-Deploying and running this server on a publicly accessible system does not require ngrok and should use the [contentful-webhook-listener.js][2] server instead.
+Deploying and running this server on a publicly accessible system does not require ngrok and, therefore, should use the [contentful-webhook-listener.js][2] server, that this is based on, instead.
 
 ## Todo
 
@@ -56,11 +56,10 @@ Deploying and running this server on a publicly accessible system does not requi
 * make port number optional by generating a random one by default
 * if port number is in use, then increment by one and try again
 * pass options object from createServer() function to ngrok.connect() for greater flexibility
-* a command line app?
 
 ## Change Log
 
-_1.0.0 — November 3, 2016_
+_1.0.0 — November 4, 2016_
 
 * initial version
 
