@@ -1,7 +1,7 @@
 "use strict";
 
 const listener = require("contentful-webhook-listener");
-const ContentfulWebhookListener = listener.ContentfulWebhookListener;
+const ContentfulWebhookListener = listener.Server;
 const ngrok = require("ngrok");
 const contentfulManagement = require("contentful-management");
 const os = require("os");
@@ -62,6 +62,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
                             server.emit("webhookCreated", webhook);
 
+                            // delete webhook when process is intrupted
                             process.on("SIGINT", function () {
 
                                 webhook.delete().then(() => {
@@ -72,6 +73,8 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                                 }).catch(handleError);
 
                             });
+
+                            // delete webhook when process is terminated
                             process.on("SIGTERM", function () {
 
                                 webhook.delete().then(() => {
