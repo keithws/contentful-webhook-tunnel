@@ -16,15 +16,16 @@ npm install contentful-webhook-tunnel
 
 ## Usage
 
-Require this module and the create a new server. Provide the username and password for HTTP Basic Authentication, the port number for the server to attach too, and the space ID(s) to create the webhooks in.
+Require this module and then create a new server. The `createServer` function expects the first argument to be an object with the `spaces` key and an array of space IDs to register the webhook with.
+
+Then listen for one or more of Contentful webhook events, `create`, `save`, `autoSave`, `archive`, `unarchive`, `delete`, `publish` or `unpublish` on the server object and setup a custom callback. See [contentful-webhook-listener.js][2] for details on the payload for each event.
+
+Lastly, instruct the server to start listening.
 
 ```node
 var tunnel = require("contentful-webhook-tunnel");
 
-var port = 5000;
 var server = tunnel.createServer({
-    "auth": "username:password",
-    "port": port,
     "spaces": [ "cfexampleapi" ]
 });
 
@@ -37,7 +38,7 @@ server.on("publish", function (payload) {
 
 });
 
-server.listen(port);
+server.listen();
 ```
 
 To register the webhooks via the Contentful Content Managment API requires an access token. Vist the [Contentful Developer Center][3] to acquire an access token for a local script. Then, save that token to an environment variable named `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`.
@@ -52,14 +53,17 @@ Deploying and running this server on a publicly accessible system does not requi
 
 ## Todo
 
-* make username and password optional by generating random ones by default
-* make port number optional by generating a random one by default
-* if port number is in use, then increment by one and try again
+* accept a single space or an array of spaces or an options object as the first argument to createServer()
 * pass options object from createServer() function to ngrok.connect() for greater flexibility
 
 ## Change Log
 
-_1.0.0 — November 4, 2016_
+_1.1.0 — November 4, 2016_
+
+* random username and password are used if none are provided
+* port number defaults to 5678 if none is provided
+
+_1.0.0 — November 3, 2016_
 
 * initial version
 
