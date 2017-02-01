@@ -17,7 +17,7 @@ function randomAuth() {
     let username = crypto.randomBytes(8).toString("hex");
     let password = crypto.randomBytes(8).toString("hex");
 
-    // insert an ":" in the middle to make this auth
+    // insert an ":" in the middle to make this an auth string
     return `${username}:${password}`;
 
 }
@@ -52,24 +52,25 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
             }
 
-            // start up ngrok
-            ngrok.once("connect", function (url) {
+            let client = contentfulManagement.createClient({
+                "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+            });
 
-                server.emit("ngrokConnect", url);
+            let hostname = os.hostname();
 
-                let client = contentfulManagement.createClient({
-                    "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
-                });
+            // connect ngrok and contentful
+            ngrok.once("connect", function (url, uiUrl) {
+
+                server.emit("ngrokConnect", url, uiUrl, options.port);
 
                 options.spaces.forEach(function (spaceId) {
 
                     // use contentful API to create/update webhook
                     client.getSpace(spaceId).then((space) => {
 
-                        let data, hostname, password, username;
+                        let data, password, username;
 
                         [username, password] = options.auth.split(":");
-                        hostname = os.hostname();
                         data = {
                             "name": `Tunnel to ${hostname}`,
                             "url": url,
@@ -124,13 +125,53 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
             ngrok.on("error", handleError);
 
-            ngrok.connect({
-                "proto": "http", // http|tcp|tls
-                "addr": options.port, // port or network address
-                "auth": options.auth, // http basic authentication for tunnel
-                "subdomain": process.env.NGROK_SUBDOMAIN, // reserved tunnel name https://alex.ngrok.io
-                "authtoken": process.env.NGROK_AUTH_TOKEN, // your authtoken from ngrok.com
-                "region": process.env.NGROK_REGION || "us" // one of ngrok regions (us, eu, au, ap), defaults to us
+            // look for existing webhook with same name
+            options.spaces.forEach(function (spaceId) {
+
+                // use contentful API to get each space
+                client.getSpace(spaceId).then(space => {
+
+                    // get all the webhooks for each space
+                    space.getWebhooks().then(webhooks => {
+
+                        if (webhooks.sys.type === "Array") {
+
+                            // find matching webhooks
+                            let matches = webhooks.items.filter(webhook => {
+
+                                return webhook.name === `Tunnel to ${hostname}`;
+
+                            });
+
+                            // remove matching webhooks
+                            Promise.all(
+
+                                matches.map(webhook => webhook.delete())
+
+                            ).then(() => {
+
+                                // only connect after all matching webhooks have been deleted
+                                ngrok.connect({
+                                    "proto": "http", // http|tcp|tls
+                                    "addr": options.port, // port or network address
+                                    "auth": options.auth, // http basic authentication for tunnel
+                                    "subdomain": process.env.NGROK_SUBDOMAIN, // reserved tunnel name https://alex.ngrok.io
+                                    "authtoken": process.env.NGROK_AUTH_TOKEN, // your authtoken from ngrok.com
+                                    "region": process.env.NGROK_REGION || "us" // one of ngrok regions (us, eu, au, ap), defaults to us
+                                });
+
+                            }).catch(handleError);
+
+                        } else {
+
+                            throw new Error("response was not an array");
+
+                        }
+
+                    }).catch(handleError);
+
+                }).catch(handleError);
+
             });
 
         });

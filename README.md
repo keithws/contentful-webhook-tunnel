@@ -41,7 +41,7 @@ server.on("publish", function (payload) {
 server.listen();
 ```
 
-To register the webhooks via the Contentful Content Managment API requires an access token. Vist the [Contentful Developer Center][3] to acquire an access token for a local script. Then, save that token to an environment variable named `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`.
+To register the webhooks via the Contentful Content Management API requires an access token. Vist the [Contentful Developer Center][3] to acquire an access token for a local script. Then, save that token to an environment variable named `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`.
 
 Ngrok defaults to using tunnel servers in the US. To use a tunnel server outside the US then set the `NGORK_REGION` environment variable to another region. See the [ngrok documentation][4] for the list of supported regions.
 
@@ -51,12 +51,50 @@ Node.js is used to create a HTTP server that listens for requests and processes 
 
 Deploying and running this server on a publicly accessible system does not require ngrok and, therefore, should use the [contentful-webhook-listener.js][2] server, that this is based on, instead.
 
+## Advanced Usage
+
+In addition to the Contentful webhook events, this server also emits the following events.
+
+### Event: 'error'
+
+* <Error> The error that occurred.
+
+Emitted when an error occurs. The server will be closed directly following this event.
+
+### Event: 'ngrokConnect'
+
+* <String> the public URL of your tunnel
+* <String> the URL to your local ngork web interface
+* <Number> the local port number that is forwarded
+
+Emitted after ngork connects.
+
+### Event: 'ngrokDisconnet'
+
+Emitted after ngrok disconnects.
+
+### Event: 'webhookCreated'
+
+* <[Webhook][webhook]> the webhook definition from Contentful
+
+Emitted after a webhook record is created via the Contentful Content Management API.
+
+### Event: 'webhookDeleted'
+
+Emitted after a webhook record is deleted via the Contentful Content Management API.
+
 ## Todo
 
 * accept a single space or an array of spaces or an options object as the first argument to createServer()
 * pass options object from createServer() function to ngrok.connect() for greater flexibility
 
 ## Change Log
+
+_1.2.0 — January 31, 2017_
+
+* automatically removes orphaned tunnels from the same host upon reconnection
+* returns the URL to the ngrok UI and the local port number that is forwarded as arguments to the `ngrokConnect` event in addition to the public ngork URL
+* requires ngrok 2.2.6 or greater to get the ngrok UI URL, otherwise that arugment will be undefined
 
 _1.1.0 — November 4, 2016_
 
@@ -75,3 +113,4 @@ contentful-webhook-tunnel is available under the [MIT License][1].
 [2]: https://github.com/keithws/contentful-webhook-listener.js
 [3]: https://www.contentful.com/developers/docs/references/authentication/#the-content-management-api
 [4]: https://ngrok.com/docs/2#global
+[webhook]: https://www.contentful.com/developers/docs/references/content-management-api/#/reference/webhooks/webhooks-collection/create-a-webhook
