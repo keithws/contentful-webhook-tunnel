@@ -6,7 +6,7 @@ A simple HTTP server for listening to Contentful API Webhooks with secure tunnel
 
 This module extends [contentful-webhook-listener.js][2] to automatically start up ngrok with a tunnel to the same port and registers a webhook for the ngrok URL with Contentful.
 
-This is very useful for local development and/or servers behind firewalls. Create a script with custom callbacks for any or all actions that occur in Contentful.
+This is very useful for local development and/or servers behind firewalls to create a script with custom callbacks for any or all actions that occur in Contentful.
 
 ## Install
 
@@ -44,6 +44,8 @@ server.listen();
 To register the webhooks via the Contentful Content Management API requires an access token. Vist the [Contentful Developer Center][3] to acquire an access token for a local script. Then, save that token to an environment variable named `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`.
 
 Ngrok defaults to using tunnel servers in the US. To use a tunnel server outside the US then set the `NGORK_REGION` environment variable to another region. See the [ngrok documentation][4] for the list of supported regions.
+
+To have your tunnel protected with HTTP Basic Auth, you must create an account the [ngrok][ngrok], get your access token, and set the `NGROK_AUTH_TOKEN` environment variable. If that environment variable is present, then random a username and password will be created and registered with Contentful each and every time the script is run.
 
 ## How it Works
 
@@ -90,6 +92,11 @@ Emitted after a webhook record is deleted via the Contentful Content Management 
 
 ## Change Log
 
+_1.3.0 — Feburary 7, 2017_
+
+* made HTTP Basic Auth optional since it requires an ngork account
+* options that require an ngork account are now only used if the `NGROK_ACCESS_TOKEN` is found in the process environment
+
 _1.2.0 — January 31, 2017_
 
 * automatically removes orphaned tunnels from the same host upon reconnection
@@ -114,3 +121,4 @@ contentful-webhook-tunnel is available under the [MIT License][1].
 [3]: https://www.contentful.com/developers/docs/references/authentication/#the-content-management-api
 [4]: https://ngrok.com/docs/2#global
 [webhook]: https://www.contentful.com/developers/docs/references/content-management-api/#/reference/webhooks/webhooks-collection/create-a-webhook
+[ngrok]: https://ngrok.com
