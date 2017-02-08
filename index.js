@@ -27,7 +27,12 @@ let options = {};
 class ContentfulWebhookTunnel extends ContentfulWebhookListener {
     constructor (opts, requestListener) {
 
-        opts.auth = opts.auth || randomAuth();
+        if (process.env.NGROK_AUTH_TOKEN) {
+
+            // basic auth requires a ngrok account and auth token
+            opts.auth = opts.auth || randomAuth();
+
+        }
         opts.port = opts.port || 5678;
         opts.spaces = opts.spaces || [];
         options = opts;
@@ -68,17 +73,21 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                     // use contentful API to create/update webhook
                     client.getSpace(spaceId).then((space) => {
 
-                        let data, password, username;
-
-                        [username, password] = options.auth.split(":");
-                        data = {
+                        let data = {
                             "name": `Tunnel to ${hostname}`,
                             "url": url,
-                            "httpBasicUsername": username,
-                            "httpBasicPassword": password,
                             "headers": [],
                             "topics": [ "*.*" ]
                         };
+
+                        // basic auth is optional
+                        if (options.auth) {
+
+                            let [username, password] = options.auth.split(":");
+                            data.httpBasicUsername = username;
+                            data.httpBasicPassword = password;
+
+                        }
 
                         space.createWebhook(data).then((webhook) => {
 
@@ -151,14 +160,22 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                             ).then(() => {
 
                                 // only connect after all matching webhooks have been deleted
-                                ngrok.connect({
+                                let ngrokOpts = {
                                     "proto": "http", // http|tcp|tls
                                     "addr": options.port, // port or network address
-                                    "auth": options.auth, // http basic authentication for tunnel
-                                    "subdomain": process.env.NGROK_SUBDOMAIN, // reserved tunnel name https://alex.ngrok.io
-                                    "authtoken": process.env.NGROK_AUTH_TOKEN, // your authtoken from ngrok.com
-                                    "region": process.env.NGROK_REGION || "us" // one of ngrok regions (us, eu, au, ap), defaults to us
-                                });
+                                    "region": process.env.NGROK_REGION || "us"
+                                };
+
+                                if (process.env.NGROK_AUTH_TOKEN) {
+
+                                    // these options require an AUTH TOKEN
+                                    ngrokOpts.auth = options.auth;
+                                    ngrokOpts.subdomain = process.env.NGROK_SUBDOMAIN;
+                                    ngrokOpts.authtoken = process.env.NGROK_AUTH_TOKEN;
+
+                                }
+
+                                ngrok.connect(ngrokOpts);
 
                             }).catch(handleError);
 
