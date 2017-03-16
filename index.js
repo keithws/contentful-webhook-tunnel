@@ -6,6 +6,14 @@ const ngrok = require("ngrok");
 const contentfulManagement = require("contentful-management");
 const os = require("os");
 const crypto = require("crypto");
+const HttpsProxyAgent = require('https-proxy-agent');
+
+var agent;
+const proxy = process.env.npm_config_https_proxy || process.env.npm_config_proxy || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+if (proxy) {
+    agent = new HttpsProxyAgent(proxy);
+}
+
 
 /**
  * generate a random string for HTTP Basic Authentication
@@ -58,7 +66,8 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
             }
 
             let client = contentfulManagement.createClient({
-                "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+                "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN,
+                "agent": agent
             });
 
             let hostname = os.hostname();

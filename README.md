@@ -85,12 +85,33 @@ Emitted after a webhook record is created via the Contentful Content Management 
 
 Emitted after a webhook record is deleted via the Contentful Content Management API.
 
+## Usage with a Proxy
+
+To proxy HTTP(S) requests, then set the appropriate npm config variables.
+
+```shell
+npm config set https-proxy http://proxy.example.com:3128/
+npm config set proxy http://proxy.example.com:3128/
+```
+
+If the npm config variables are not found, then these environment variables will be used.
+
+```shell
+HTTPS_PROXY=http://proxy.example.com:3128/
+HTTP_PROXY=http://proxy.example.com:3128/
+```
+
 ## Todo
 
 * accept a single space or an array of spaces or an options object as the first argument to createServer()
 * pass options object from createServer() function to ngrok.connect() for greater flexibility
 
 ## Change Log
+
+_1.4.0 — March 16, 2017_
+
+* added HTTP proxy support with https-proxy-agent
+* proxy settings are read from the npm config or from the environment variables
 
 _1.3.0 — Feburary 7, 2017_
 
