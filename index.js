@@ -6,7 +6,7 @@ const ngrok = require("ngrok");
 const contentfulManagement = require("contentful-management");
 const os = require("os");
 const crypto = require("crypto");
-const HttpsProxyAgent = require('https-proxy-agent');
+const HttpsProxyAgent = require("https-proxy-agent");
 
 var agent;
 const proxy = process.env.npm_config_https_proxy || process.env.npm_config_proxy || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
