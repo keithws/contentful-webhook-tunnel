@@ -41,7 +41,6 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
             opts.auth = opts.auth || randomAuth();
 
         }
-        opts.port = opts.port || 5678;
         opts.spaces = opts.spaces || [];
         options = opts;
 
@@ -57,6 +56,8 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
         }
 
         server.on("listening", function () {
+
+            let port = server.address().port;
 
             if (!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
 
@@ -75,7 +76,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
             // connect ngrok and contentful
             ngrok.once("connect", function (url, uiUrl) {
 
-                server.emit("ngrokConnect", url, uiUrl, options.port);
+                server.emit("ngrokConnect", url, uiUrl, port);
 
                 options.spaces.forEach(function (spaceId) {
 
@@ -171,7 +172,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                                 // only connect after all matching webhooks have been deleted
                                 let ngrokOpts = {
                                     "proto": "http", // http|tcp|tls
-                                    "addr": options.port, // port or network address
+                                    "addr": port, // port or network address
                                     "region": process.env.NGROK_REGION || "us"
                                 };
 

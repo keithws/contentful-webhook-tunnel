@@ -104,9 +104,13 @@ HTTP_PROXY=http://proxy.example.com:3128/
 ## Todo
 
 * accept a single space or an array of spaces or an options object as the first argument to createServer()
-* pass options object from createServer() function to ngrok.connect() for greater flexibility
 
 ## Change Log
+
+_1.5.0 — March 17, 2017_
+
+* port number no longer defaults to 5678
+* if port number is not specified, then the OS will chose a random port number
 
 _1.4.0 — March 16, 2017_
 
