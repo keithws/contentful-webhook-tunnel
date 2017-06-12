@@ -173,7 +173,8 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                                 let ngrokOpts = {
                                     "proto": "http", // http|tcp|tls
                                     "addr": port, // port or network address
-                                    "region": process.env.NGROK_REGION || "us"
+                                    "region": process.env.NGROK_REGION || "us",
+                                    "bind_tls": true
                                 };
 
                                 if (process.env.NGROK_AUTH_TOKEN) {
