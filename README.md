@@ -45,7 +45,7 @@ To register the webhooks via the Contentful Content Management API requires an a
 
 Ngrok defaults to using tunnel servers in the US. To use a tunnel server outside the US then set the `NGORK_REGION` environment variable to another region. See the [ngrok documentation][4] for the list of supported regions.
 
-To have your tunnel protected with HTTP Basic Auth, you must create an account the [ngrok][ngrok], get your access token, and set the `NGROK_AUTH_TOKEN` environment variable. If that environment variable is present, then random a username and password will be created and registered with Contentful each and every time the script is run.
+To have your tunnel protected with HTTP Basic Auth, you must create an account with [ngrok][ngrok], get your access token, and set the `NGROK_AUTH_TOKEN` environment variable. If that environment variable is present, then a random username and a random password will be created and registered with Contentful each and every time the script is run.
 
 ## How it Works
 
@@ -121,7 +121,7 @@ _1.4.0 — March 16, 2017_
 * added HTTP proxy support with https-proxy-agent
 * proxy settings are read from the npm config or from the environment variables
 
-_1.3.0 — Feburary 7, 2017_
+_1.3.0 — February 7, 2017_
 
 * made HTTP Basic Auth optional since it requires an ngork account
 * options that require an ngork account are now only used if the `NGROK_ACCESS_TOKEN` is found in the process environment
@@ -130,7 +130,7 @@ _1.2.0 — January 31, 2017_
 
 * automatically removes orphaned tunnels from the same host upon reconnection
 * returns the URL to the ngrok UI and the local port number that is forwarded as arguments to the `ngrokConnect` event in addition to the public ngork URL
-* requires ngrok 2.2.6 or greater to get the ngrok UI URL, otherwise that arugment will be undefined
+* requires ngrok 2.2.6 or greater to get the ngrok UI URL, otherwise that argument will be undefined
 
 _1.1.0 — November 4, 2016_
 
