@@ -107,6 +107,10 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_1.5.1 — June 12, 2017_
+
+* only binds tls for https
+
 _1.5.0 — March 17, 2017_
 
 * port number no longer defaults to 5678
