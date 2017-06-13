@@ -107,6 +107,10 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_1.5.4 — June 13, 2017_
+
+* fixed bug that prevented authentication from being setup
+
 _1.5.3 — June 13, 2017_
 
 * fixed bug that caused multiple tunnels to use the same options
