@@ -107,6 +107,20 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_1.5.3 — June 13, 2017_
+
+* fixed bug that caused multiple tunnels to use the same options
+* fixed bug that caused multiple tunnels to register with all spaces
+* optimized tunnel creation
+	* multiple spaces no longer require multiple tunnels
+	* one tunnel is created and registered in each space
+* improved readability of code in constructor
+* refactored the process of finding and removing existing webhooks with the same name before re-connecting to make better use of promises
+
+_1.5.2 — June 12, 2017_
+
+* ngrok options can now be passed to createServer()
+
 _1.5.1 — June 12, 2017_
 
 * only binds tls for https

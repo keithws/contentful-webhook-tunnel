@@ -30,21 +30,55 @@ function randomAuth() {
 
 }
 
-let options = {};
-
 class ContentfulWebhookTunnel extends ContentfulWebhookListener {
     constructor (opts, requestListener) {
 
+        // must set opts.auth before calling parent constructor
         if (process.env.NGROK_AUTH_TOKEN) {
 
-            // basic auth requires a ngrok account and auth token
+            // this option requires an AUTH TOKEN
             opts.auth = opts.auth || randomAuth();
 
         }
-        opts.spaces = opts.spaces || [];
-        options = opts;
 
         super(opts, requestListener);
+        this.options = this.options || {};
+        this.options.port = opts.port || 0;
+        this.options.spaces = opts.spaces || [];
+
+        // define our default ngrok options
+        this.options.ngrok = {
+            "proto": "http",
+            "bind_tls": true,
+            "region": "us"
+        };
+
+        // allow options passed to createServer() to override the defaults
+        Object.assign(this.options.ngrok, opts.ngrok);
+
+        // environment variables override defaults and values from createServer
+        if (process.env.NGROK_REGION) {
+
+            this.options.ngrok.region = process.env.NGROK_REGION;
+
+        }
+        if (process.env.NGROK_AUTH_TOKEN) {
+
+            this.options.ngrok.authtoken = process.env.NGROK_AUTH_TOKEN;
+
+        }
+        if (process.env.NGROK_SUBDOMAIN && process.env.NGROK_AUTH_TOKEN) {
+
+            // this option requires an AUTH TOKEN
+            this.options.ngrok.subdomain = process.env.NGROK_SUBDOMAIN;
+
+        }
+        if (opts.auth && process.env.NGROK_AUTH_TOKEN) {
+
+            // this option requires an AUTH TOKEN
+            this.options.ngrok.auth = opts.auth;
+
+        }
 
         let server = this;
 
@@ -58,6 +92,9 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
         server.on("listening", function () {
 
             let port = server.address().port;
+
+            // tell ngrok which port we are listening on
+            this.options.ngrok.addr = port;
 
             if (!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
 
@@ -73,130 +110,106 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
             let hostname = os.hostname();
 
+            ngrok.on("disconnect", () => server.emit("ngrokDisconnet"));
+            ngrok.on("error", err => handleError(err));
+
             // connect ngrok and contentful
-            ngrok.once("connect", function (url, uiUrl) {
+            ngrok.connect(server.options.ngrok, (err, url, uiUrl) => {
+
+                if (err) {
+                    return;
+                }
 
                 server.emit("ngrokConnect", url, uiUrl, port);
 
-                options.spaces.forEach(function (spaceId) {
+                // find and remove webhooks with the same name before re-connecting
+                Promise.all(server.options.spaces.map(spaceId => {
 
-                    // use contentful API to create/update webhook
-                    client.getSpace(spaceId).then((space) => {
+                    // use contentful API to get each space
+                    return client.getSpace(spaceId);
 
-                        let data = {
-                            "name": `Tunnel to ${hostname}`,
-                            "url": url,
-                            "headers": [],
-                            "topics": [ "*.*" ]
-                        };
-
-                        // basic auth is optional
-                        if (options.auth) {
-
-                            let [username, password] = options.auth.split(":");
-                            data.httpBasicUsername = username;
-                            data.httpBasicPassword = password;
-
-                        }
-
-                        space.createWebhook(data).then((webhook) => {
-
-                            server.emit("webhookCreated", webhook);
-
-                            // delete webhook when process is intrupted
-                            process.on("SIGINT", function () {
-
-                                webhook.delete().then(() => {
-
-                                    server.emit("webhookDeleted");
-                                    process.exit(128 + 2);
-
-                                }).catch(handleError);
-
-                            });
-
-                            // delete webhook when process is terminated
-                            process.on("SIGTERM", function () {
-
-                                webhook.delete().then(() => {
-
-                                    server.emit("webhookDeleted");
-                                    process.exit(128 + 15);
-
-                                }).catch(handleError);
-
-                            });
-
-                        }).catch(handleError);
-
-
-                    }).catch(handleError);
-
-                });
-
-            });
-
-            ngrok.on("disconnect", () => {
-
-                server.emit("ngrokDisconnet");
-
-            });
-
-            ngrok.on("error", handleError);
-
-            // look for existing webhook with same name
-            options.spaces.forEach(function (spaceId) {
-
-                // use contentful API to get each space
-                client.getSpace(spaceId).then(space => {
+                })).then(spaces => {
 
                     // get all the webhooks for each space
-                    space.getWebhooks().then(webhooks => {
+                    return Promise.all(spaces.map(space => space.getWebhooks()));
 
-                        if (webhooks.sys.type === "Array") {
+                }).then(responses => {
 
-                            // find matching webhooks
-                            let matches = webhooks.items.filter(webhook => {
+                    let webhooks = responses.filter(response => response.sys.type === "Array");
 
-                                return webhook.name === `Tunnel to ${hostname}`;
+                    webhooks = webhooks.reduce((acc, v) => acc.concat(v.items), []);
 
-                            });
+                    // find matching webhooks
+                    let matches = webhooks.filter(webhook => {
 
-                            // remove matching webhooks
-                            Promise.all(
+                        return webhook.name === `Tunnel to ${hostname}`;
 
-                                matches.map(webhook => webhook.delete())
+                    });
 
-                            ).then(() => {
+                    // remove matching webhooks
+                    return Promise.all(matches.map(webhook => webhook.delete()));
 
-                                // only connect after all matching webhooks have been deleted
-                                let ngrokOpts = {
-                                    "proto": "http", // http|tcp|tls
-                                    "addr": port, // port or network address
-                                    "region": process.env.NGROK_REGION || "us",
-                                    "bind_tls": true
-                                };
+                }).then(() => {
 
-                                if (process.env.NGROK_AUTH_TOKEN) {
+                    return Promise.all(server.options.spaces.map(spaceId => {
 
-                                    // these options require an AUTH TOKEN
-                                    ngrokOpts.auth = options.auth;
-                                    ngrokOpts.subdomain = process.env.NGROK_SUBDOMAIN;
-                                    ngrokOpts.authtoken = process.env.NGROK_AUTH_TOKEN;
+                        // use contentful API to get each space
+                        return client.getSpace(spaceId);
 
-                                }
+                    }));
 
-                                ngrok.connect(ngrokOpts);
+                }).then(spaces => {
+
+                    // use contentful API to create/update webhook
+                    let data = {
+                        "name": `Tunnel to ${hostname}`,
+                        "url": url,
+                        "headers": [],
+                        "topics": [ "*.*" ]
+                    };
+
+                    // basic auth is optional
+                    if (server.options.auth) {
+
+                        let [username, password] = server.options.auth.split(":");
+                        data.httpBasicUsername = username;
+                        data.httpBasicPassword = password;
+
+                    }
+
+                    return Promise.all(spaces.map(space => space.createWebhook(data)));
+
+                }).then(webhooks => {
+
+                    webhooks.forEach(webhook => {
+
+                        server.emit("webhookCreated", webhook);
+
+                        // delete webhook when process is intrupted
+                        process.on("SIGINT", function () {
+
+                            webhook.delete().then(() => {
+
+                                server.emit("webhookDeleted");
+                                process.exit(128 + 2);
 
                             }).catch(handleError);
 
-                        } else {
+                        });
 
-                            throw new Error("response was not an array");
+                        // delete webhook when process is terminated
+                        process.on("SIGTERM", function () {
 
-                        }
+                            webhook.delete().then(() => {
 
-                    }).catch(handleError);
+                                server.emit("webhookDeleted");
+                                process.exit(128 + 15);
+
+                            }).catch(handleError);
+
+                        });
+
+                    });
 
                 }).catch(handleError);
 
@@ -206,7 +219,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
     }
     listen(port, hostname, backlog, callback) {
 
-        port = port || options.port;
+        port = port || this.options.port || this.options.ngrok.addr || 0;
 
         super.listen(port, hostname, backlog, callback);
 
