@@ -43,6 +43,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
         super(opts, requestListener);
         this.options = this.options || {};
+        this.options.auth = opts.auth;
         this.options.port = opts.port || 0;
         this.options.spaces = opts.spaces || [];
 
