@@ -162,10 +162,13 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                 }).then(spaces => {
 
                     // use contentful API to create/update webhook
+                    let now = (new Date()).toGMTString();
                     let data = {
                         "name": `Tunnel to ${hostname}`,
                         "url": url,
-                        "headers": [],
+                        "headers": [
+                            `X-Date-Created: ${now}`
+                        ],
                         "topics": [ "*.*" ]
                     };
 
