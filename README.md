@@ -107,6 +107,10 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_1.6.0 — November 21, 2017_
+
+* added custom header when webhook is created in Contentful to note when it was created
+
 _1.5.4 — June 13, 2017_
 
 * fixed bug that prevented authentication from being setup
