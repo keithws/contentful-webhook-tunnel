@@ -112,6 +112,9 @@ _2.0.0 — November 22, 2017_
 * updated dependancies
 * added tests with Mocha
 * added close() method to delete webhook records and close tunnels
+_1.6.1 — November 21, 2017_
+
+* fixed bug in custom header declaration
 
 _1.6.0 — November 21, 2017_
 
