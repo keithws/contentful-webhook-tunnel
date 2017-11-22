@@ -90,6 +90,9 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
         }
 
+        // a place to save a list of registered webhooks
+        server.webhooks = [];
+
         server.on("listening", function () {
 
             let port = server.address().port;
@@ -166,9 +169,10 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                     let data = {
                         "name": `Tunnel to ${hostname}`,
                         "url": url,
-                        "headers": [
-                            `X-Date-Created: ${now}`
-                        ],
+                        "headers": [{
+                            "key": "X-Date-Created",
+                            "value": `${now}`
+                        }],
                         "topics": [ "*.*" ]
                     };
 
@@ -188,6 +192,9 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                     webhooks.forEach(webhook => {
 
                         server.emit("webhookCreated", webhook);
+
+                        // add to this server's list of registered webhooks
+                        server.webhooks.push(webhook);
 
                         // delete webhook when process is intrupted
                         process.on("SIGINT", function () {
@@ -226,6 +233,33 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
         port = port || this.options.port || this.options.ngrok.addr || 0;
 
         super.listen(port, hostname, backlog, callback);
+
+    }
+    close(callback) {
+
+        // delete webhook records from Contentful
+        Promise.all(
+            this.webhooks.map(webhook => webhook.delete())
+        ).then(() => {
+
+            // close the ngrok tunnel
+            ngrok.disconnect();
+
+            // then close the server
+            super.close(callback);
+
+        }).catch(err => {
+
+            // close the ngrok tunnel
+            ngrok.disconnect();
+
+            // then close the server
+            super.close(callback);
+
+            // then throw the error
+            throw err;
+
+        });
 
     }
 }

@@ -107,6 +107,12 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_2.0.0 — November 22, 2017_
+
+* updated dependancies
+* added tests with Mocha
+* added close() method to delete webhook records and close tunnels
+
 _1.6.0 — November 21, 2017_
 
 * added custom header when webhook is created in Contentful to note when it was created
