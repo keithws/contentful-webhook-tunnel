@@ -166,9 +166,10 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
                     let data = {
                         "name": `Tunnel to ${hostname}`,
                         "url": url,
-                        "headers": [
-                            `X-Date-Created: ${now}`
-                        ],
+                        "headers": [{
+                            "key": "X-Date-Created",
+                            "value": `${now}`
+                        }],
                         "topics": [ "*.*" ]
                     };
 
