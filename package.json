@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/keithws/contentful-webhook-tunnel#readme",
   "devDependencies": {
+    "dotenv": "^4.0.0",
     "eslint": "^4.11.0",
     "mocha": "^4.0.1",
     "should": "^13.1.3"
