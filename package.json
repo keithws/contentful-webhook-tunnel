@@ -36,7 +36,7 @@
   "dependencies": {
     "contentful-management": "^4.1.2",
     "contentful-webhook-listener": "^1.0.2",
-    "https-proxy-agent": "^2.1.0",
+    "https-proxy-agent": "^2.2.0",
     "ngrok": "^2.2.23"
   }
 }
