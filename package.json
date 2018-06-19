@@ -1,10 +1,11 @@
 {
   "name": "contentful-webhook-tunnel",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost.",
   "main": "index.js",
   "scripts": {
-    "test": "eslint \"**/*.js\" && mocha"
+    "pretest": "eslint \"**/*.js\"",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -28,15 +29,15 @@
   },
   "homepage": "https://github.com/keithws/contentful-webhook-tunnel#readme",
   "devDependencies": {
-    "dotenv": "^4.0.0",
-    "eslint": "^4.11.0",
-    "mocha": "^4.0.1",
-    "should": "^13.1.3"
+    "dotenv": "^6.0.0",
+    "eslint": "^4.0.0",
+    "mocha": "^5.0.0",
+    "should": "^13.0.0"
   },
   "dependencies": {
-    "contentful-management": "^4.1.2",
-    "contentful-webhook-listener": "^1.0.2",
+    "contentful-management": "^5.0.0",
+    "contentful-webhook-listener": "^1.0.0",
     "https-proxy-agent": "^2.2.0",
-    "ngrok": "^2.2.23"
+    "ngrok": "^3.0.0"
   }
 }
