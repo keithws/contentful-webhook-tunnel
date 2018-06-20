@@ -103,15 +103,16 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Todo
 
+* added close() method to delete webhook records and close tunnels
 * accept a single space or an array of spaces or an options object as the first argument to createServer()
 
 ## Change Log
 
-_2.0.0 — November 22, 2017_
+_2.0.0 — June 19, 2018_
 
-* updated dependancies
-* added tests with Mocha
-* added close() method to delete webhook records and close tunnels
+* updated dependancies to resolve security issues
+* updated to ngrok 3.0 which requires 8.3.0 or greater
+
 _1.6.1 — November 21, 2017_
 
 * fixed bug in custom header declaration
