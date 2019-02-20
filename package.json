@@ -1,6 +1,6 @@
 {
   "name": "contentful-webhook-tunnel",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "An HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost.",
   "main": "index.js",
   "scripts": {

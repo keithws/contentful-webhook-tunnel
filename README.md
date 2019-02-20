@@ -108,6 +108,10 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_2.0.2 — February 19, 2018_
+
+* updated dependancies to resolve security issues
+
 _2.0.1 — June 19, 2018_
 
 * updated package-lock.json file
