@@ -1,6 +1,6 @@
 {
   "name": "contentful-webhook-tunnel",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "An HTTP server for listening to Contentful API Webhooks with secure tunnels to localhost.",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/keithws/contentful-webhook-tunnel.git"
   },
+  "files": [
+    "index.js"
+  ],
   "keywords": [
     "contentful",
     "webhook",

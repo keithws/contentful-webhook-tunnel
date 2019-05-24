@@ -108,6 +108,14 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_2.0.4 — May 23, 2019_
+
+* improved build
+
+_2.0.3 — May 23, 2019_
+
+* updated some ngrok calls to promises
+
 _2.0.2 — February 19, 2018_
 
 * updated dependancies to resolve security issues

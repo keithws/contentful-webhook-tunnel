@@ -1,6 +1,9 @@
 # dotenv file
 .env
 
+# i personally don't like package-lock in my repo
+package-lock.json
+
 # Logs
 logs
 *.log
