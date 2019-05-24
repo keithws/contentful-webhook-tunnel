@@ -108,6 +108,10 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_2.0.5 — May 24, 2019_
+
+* updated property name for proxy config for contentful-management
+
 _2.0.4 — May 23, 2019_
 
 * improved build
