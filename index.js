@@ -114,17 +114,12 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
             let hostname = os.hostname();
 
-            ngrok.on("disconnect", () => server.emit("ngrokDisconnet"));
-            ngrok.on("error", err => handleError(err));
+            const p1 = ngrok.connect(server.options.ngrok);
 
             // connect ngrok and contentful
-            ngrok.connect(server.options.ngrok, (err, url, uiUrl) => {
+            p1.then(url => {
 
-                if (err) {
-                    return;
-                }
-
-                server.emit("ngrokConnect", url, uiUrl, port);
+                server.emit("ngrokConnect", url, null, port);
 
                 // find and remove webhooks with the same name before re-connecting
                 Promise.all(server.options.spaces.map(spaceId => {
@@ -191,42 +186,51 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
                     webhooks.forEach(webhook => {
 
-                        server.emit("webhookCreated", webhook);
-
                         // add to this server's list of registered webhooks
                         server.webhooks.push(webhook);
-
-                        // delete webhook when process is intrupted
-                        process.on("SIGINT", function () {
-
-                            webhook.delete().then(() => {
-
-                                server.emit("webhookDeleted");
-                                process.exit(128 + 2);
-
-                            }).catch(handleError);
-
-                        });
-
-                        // delete webhook when process is terminated
-                        process.on("SIGTERM", function () {
-
-                            webhook.delete().then(() => {
-
-                                server.emit("webhookDeleted");
-                                process.exit(128 + 15);
-
-                            }).catch(handleError);
-
-                        });
+                        server.emit("webhookCreated", webhook);
 
                     });
 
                 }).catch(handleError);
 
-            });
+            }).catch(handleError);
 
         });
+
+
+        // delete all webhooks when server closes
+        // TODO needed?
+
+        function handleSignal (signal) {
+
+            Promise.all(
+                server.webhooks.map(webhook => server.deleteWebhook(webhook))
+            ).then(() => {
+                process.exit(128 + signal);
+            });
+
+        }
+
+        // delete all webhooks when process is interrupted
+        process.on("SIGINT", handleSignal);
+
+        // delete all webhook when process is terminated
+        process.on("SIGTERM", handleSignal);
+
+    }
+    deleteWebhook(webhook) {
+
+        const server = this;
+        const index = server.webhooks.indexOf(webhook);
+        server.webhooks.splice(index, 1);
+        return webhook.delete().then(() => {
+
+            server.emit("webhookDeleted", webhook);
+            return Promise.resolve(webhook);
+
+        });
+
     }
     listen(port, hostname, backlog, callback) {
 
@@ -237,31 +241,35 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
     }
     close(callback) {
 
+        // collect ALL the webhook urls
+        const urls = this.webhooks.map(webhook => webhook.url);
+
         // delete webhook records from Contentful
         Promise.all(
-            this.webhooks.map(webhook => webhook.delete())
+            this.webhooks.map(webhook => this.deleteWebhook(webhook))
         ).then(() => {
 
-            // close the ngrok tunnel
-            ngrok.disconnect();
+            // close all the ngrok tunnels
+            return Promise.all(urls.map(url => ngrok.disconnect(url)));
+
+        }).then(() => {
+
+            // kills ngrok proess
+            return ngrok.kill();
+
+        }).then(() => {
 
             // then close the server
             super.close(callback);
 
         }).catch(err => {
 
-            // close the ngrok tunnel
-            ngrok.disconnect();
-
-            // then close the server
-            super.close(callback);
-
-            // then throw the error
-            throw err;
+            callback(err);
 
         });
 
     }
+
 }
 
 exports.Server = ContentfulWebhookTunnel;

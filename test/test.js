@@ -4,188 +4,150 @@ const tunnel = require("..");
 const should = require("should");
 
 describe("Contentful Webhook Tunnel", function () {
-    describe("createServer", function () {
-        this.slow(4000);
+    this.slow(4 * 1000);
+    this.timeout(16 * 1000);
 
-        it("should open a tunnel with ngrok and register a webhook with Contentful", function (done) {
+    let server;
 
-            let webhook = tunnel.createServer({
-                "spaces": [ "4l0w8syj29ap" ],
-            });
+    beforeEach(function (done) {
 
-            let p1 = new Promise((resolve, reject) => {
+        server = tunnel.createServer({
+            "spaces": [ "4l0w8syj29ap" ],
+        });
 
-                // log info about the tunnel
-                webhook.on("ngrokConnect", function (url, uiUrl, port) {
+        // listen for errors
+        server.on("error", function (err) {
 
-                    try {
+            done(err);
 
-                        should(url).be.a.String;
-                        uiUrl.should.be.a.String;
-                        port.should.be.a.Number;
-                        port.should.be.above(1024);
-                        port.should.be.below(65536);
-                        url.should.match(/^https:\/\/[0-9a-f]+.ngrok.io$/);
-                        uiUrl.should.match(/^http:\/\/127.0.0.1:\d{4,5}$/);
+        });
 
-                        resolve();
+        server.on("listening", done);
 
-                    } catch (err) {
-                        reject(err);
-                    }
+        // start up a webhook listener server
+        server.listen();
 
+    });
 
-                });
+    afterEach(function (done) {
 
-            });
+        server.close(done);
 
-            let p2 = new Promise((resolve, reject) => {
+    });
 
-                // log info about the webhooks
-                webhook.on("webhookCreated", function (record) {
+    describe("constructor()", function () {
 
-                    try {
+        it("should open a tunnel with ngrok", function (done) {
 
-                        record.should.exist;
-                        record.url.should.exist;
-                        record.url.should.match(/https:\/\/[0-9a-f]+.ngrok.io/);
+            // log info about the tunnel
+            server.on("ngrokConnect", function (url, uiUrl, port) {
 
-                        // TODO verify record has custom header with date created
-                        record.headers.should.exist;
-                        record.headers.should.have.length(1);
-                        record.headers[0].should.exist;
-                        record.headers[0].should.have.keys("key", "value");
-                        record.headers[0].key.should.equal("X-Date-Created");
+                try {
 
-                        webhook.close(resolve);
+                    should(url).be.a.String;
+                    //uiUrl.should.be.a.String;
+                    port.should.be.a.Number;
+                    port.should.be.above(1024);
+                    port.should.be.below(65536);
+                    url.should.match(/^https:\/\/[0-9a-f]+.ngrok.io$/);
+                    //uiUrl.should.match(/^http:\/\/127.0.0.1:\d{4,5}$/);
 
-                    } catch (err) {
-                        reject(err);
-                    }
+                    done();
 
+                } catch (err) {
 
-                });
+                    done(err);
 
-                /* 
-                 * TODO
-                 * create delete method on webhook object so this event can be tested
-                 */
-                /*
-                webhook.on("webhookDeleted", function () {
-
-                    console.log("Webhook deleted");
-
-                });
-                */
-
-            });
-
-            // listen for errors
-            webhook.on("error", function (err) {
-
-                webhook.close();
-                throw err;
-
-            });
-
-            // start up a webhook listener server
-            webhook.listen();
-
-            Promise.all([p1, p2]).then(() => {
-
-                done();
-
-            }).catch(err => {
-
-                webhook.close();
-                done(err);
+                }
 
             });
 
         });
+
+        it("should register a webhook with Contentful", function (done) {
+
+            // log info about the webhook
+            server.on("webhookCreated", function (record) {
+
+                try {
+
+                    record.should.exist;
+                    record.url.should.exist;
+                    record.url.should.match(/https:\/\/[0-9a-f]+.ngrok.io/);
+
+                    // TODO verify record has custom header with date created
+                    record.headers.should.exist;
+                    record.headers.should.have.length(1);
+                    record.headers[0].should.exist;
+                    record.headers[0].should.have.keys("key", "value");
+                    record.headers[0].key.should.equal("X-Date-Created");
+
+                    done();
+
+                } catch (err) {
+
+                    done(err);
+
+                }
+
+            });
+
+        });
+
     });
-});
 
+    describe("deleteWebhook()", function () {
 
-// TODO create Mocha test of behavrior when two tunnels are created at the same time
+        it("should delete a registered webhook", function (done) {
 
+            // wait for deleted event and very returned data
+            server.on("webhookDeleted", function (record) {
 
+                try {
 
+                    record.should.exist;
+                    record.url.should.exist;
+                    record.url.should.match(/https:\/\/[0-9a-f]+.ngrok.io/);
 
-/*
-let webhook2 = tunnel.createServer({
-    "spaces": [ "i3mqntl0l339" ],
-});
+                    // TODO verify record has custom header with date created
+                    record.headers.should.exist;
+                    record.headers.should.have.length(1);
+                    record.headers[0].should.exist;
+                    record.headers[0].should.have.keys("key", "value");
+                    record.headers[0].key.should.equal("X-Date-Created");
 
-// log info about the tunnel
-webhook2.on("ngrokConnect", function (url, uiUrl, port) {
+                    done();
 
-    console.log("2: \x1b[1mAccess URLs:\x1b[22m");
-    console.log("2:  \x1b[90m----------------------------------------\x1b[39m");
-    console.log("2:        Local: \x1b[35mhttp://localhost:%s\x1b[39m", port);
-    console.log("2:     External: \x1b[35m%s\x1b[39m", url);
-    console.log("2:  \x1b[90m----------------------------------------\x1b[39m");
-    console.log("2:           UI: \x1b[35m%s\x1b[39m", uiUrl);
-    console.log("2:  \x1b[90m----------------------------------------\x1b[39m");
-    console.log(`2: !!! NOT SAVING CHANGES BECAUSE THIS IS A TEST !!!`);
+                } catch (err) {
 
-});
+                    done(err);
 
-// log info about the webhooks
-webhook2.on("webhookCreated", function (webhook) {
+                }
 
-    console.log(`2: Webhook created: ${webhook.url}`);
-    console.log("2: Listening for changes...");
+            });
 
-});
-webhook2.on("webhookDeleted", function () {
+            // wait to delete the webhook until it has been created
+            server.on("webhookCreated", function (record) {
 
-    console.log("2: Webhook deleted");
+                server.deleteWebhook(record);
 
-});
+            });
 
+        });
 
-// listen for errors
-webhook2.on("error", function (err) {
+    });
 
-    if (err.details && err.details.err) {
+    describe("listen()", function () {
 
-        // if it is an ngrok error it may have a err.details.err message
-        console.error(err.details.err);
-        if (err.stack) {
+        // should start an HTTP server listening on a port
 
-            // always try to log the stack trace
-            console.error(err.stack);
+    });
 
-        }
+    describe("close()", function () {
 
-    } else if (err.msg) {
+        // should shutdown HTTP server
+        // should stop ngrok process
 
-        // otherwise it may have a err.msg property
-        console.error(err.msg);
-        if (err.stack) {
-
-            // always try to log the stack trace
-            console.error(err.stack);
-
-        }
-
-    } else if (err.stack) {
-
-        // or it may have a stack
-        console.error(err.stack);
-
-    } else {
-
-        // or it may something else entirely
-        console.error(err);
-
-    }
-    webhook2.close();
-    throw err;
+    });
 
 });
-
-// start up a webhook listener server
-webhook2.listen();
-*/
