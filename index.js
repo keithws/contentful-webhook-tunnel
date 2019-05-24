@@ -9,7 +9,7 @@ const crypto = require("crypto");
 const HttpsProxyAgent = require("https-proxy-agent");
 
 var agent;
-const proxy = process.env.npm_config_https_proxy || process.env.npm_config_proxy || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+const proxy = process.env.npm_config_https_proxy || process.env.HTTPS_PROXY;
 if (proxy) {
     agent = new HttpsProxyAgent(proxy);
 }
@@ -109,7 +109,7 @@ class ContentfulWebhookTunnel extends ContentfulWebhookListener {
 
             let client = contentfulManagement.createClient({
                 "accessToken": process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN,
-                "agent": agent
+                "httpsAgent": agent
             });
 
             let hostname = os.hostname();
