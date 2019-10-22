@@ -32,16 +32,16 @@
   },
   "homepage": "https://github.com/keithws/contentful-webhook-tunnel#readme",
   "devDependencies": {
-    "dotenv": "^8.0.0",
-    "eslint": "^5.16.0",
-    "mocha": "^6.1.4",
+    "dotenv": "^8.2.0",
+    "eslint": "^6.5.1",
+    "mocha": "^6.2.2",
     "should": "^13.2.3"
   },
   "dependencies": {
-    "contentful-management": "^5.7.2",
+    "contentful-management": "^5.11.2",
     "contentful-webhook-listener": "^1.0.2",
-    "https-proxy-agent": "^2.2.1",
-    "ngrok": "^3.1.1"
+    "https-proxy-agent": "^3.0.0",
+    "ngrok": "^3.2.5"
   },
   "engines": {
     "node": ">=8.3.0"
