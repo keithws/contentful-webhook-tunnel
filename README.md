@@ -108,6 +108,11 @@ HTTP_PROXY=http://proxy.example.com:3128/
 
 ## Change Log
 
+_2.0.6 — October 21, 2019_
+
+* updated deps to latest
+* resolved security issue with eslint
+
 _2.0.5 — May 24, 2019_
 
 * updated property name for proxy config for contentful-management
